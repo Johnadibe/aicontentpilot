@@ -2,9 +2,15 @@
 
 import Script from "next/script"
 import { usePathname, useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 
-export function Analytics() {
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void
+  }
+}
+
+function AnalyticsContent() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
@@ -21,6 +27,10 @@ export function Analytics() {
     }
   }, [pathname, searchParams])
 
+  return null
+}
+
+export function Analytics() {
   return (
     <>
       <Script strategy="afterInteractive" src={`https://www.googletagmanager.com/gtag/js?id=G-MEASUREMENT_ID`} />
@@ -36,6 +46,9 @@ export function Analytics() {
           `,
         }}
       />
+      <Suspense fallback={null}>
+        <AnalyticsContent />
+      </Suspense>
     </>
   )
 }

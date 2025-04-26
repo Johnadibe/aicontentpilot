@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import React, { Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -28,7 +28,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-export function LoginForm() {
+function LoginFormContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard"
@@ -266,5 +266,19 @@ export function LoginForm() {
         </Button>
       </div>
     </div>
+  )
+}
+
+export function LoginForm() {
+  return (
+    <Suspense fallback={
+      <div className="grid gap-6">
+        <div className="flex items-center justify-center">
+          <Icons.spinner className="h-8 w-8 animate-spin" />
+        </div>
+      </div>
+    }>
+      <LoginFormContent />
+    </Suspense>
   )
 }

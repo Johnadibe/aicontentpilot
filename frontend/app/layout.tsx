@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster"
 import { Analytics } from "@/components/analytics"
 import Header from "@/components/layout/header"
 import { Suspense } from "react"
-import { SessionProvider } from "next-auth/react"
 import { Providers } from "./providers"
 import Footer from "@/components/layout/footer"
 
