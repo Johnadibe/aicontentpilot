@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3011:8000"
+    env_file:
+      - .env.dev
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=HS256
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - BACKEND_URL=${BACKEND_URL}
+      - FRONTEND_URL=http://frontend:3000
+      - DATABASE_URL=${POSTGRES_URL}
+      - deepseek_api_key=${deepseek_api_key}
+      - deepseek_api_base=${deepseek_api_base}
+    volumes:
+      - backend-data:/app/data
+    restart: unless-stopped
+    networks:
+      - aipen-network
+
+volumes:
+  backend-data:
+
+networks:
+  aipen-network:
+    name: aipen-network
+    external: true

@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id                String    @id @default(cuid())
+  name              String?
+  email             String?   @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  role              Role      @default(USER)
+  
+  // Authentication enhancements
+  loginAttempts     Int       @default(0)
+  lockedUntil       DateTime?
+  lastLogin         DateTime?
+  twoFactorEnabled  Boolean   @default(false)
+  twoFactorSecret   String?
+  
+  // User preferences
+  timezone          String?   @default("UTC")
+  language          String?   @default("en")
+  notificationPreferences Json?
+  
+  // Security
+  passwordChangedAt DateTime?
+  
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  contents          Content[]
+  teams             Team[]    @relation("TeamMembers")
+  ownedTeams        Team[]    @relation("TeamOwner")
+  subscription      Subscription?
+  verificationTokens VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+  activities        UserActivity[]
+  apiKeys           ApiKey[]
+}
+
+model VerificationToken {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  expires     DateTime
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+}
+
+model PasswordResetToken {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  expires     DateTime
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  usedAt      DateTime?
+}
+
+model UserActivity {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        ActivityType
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+  metadata    Json?
+}
+
+enum ActivityType {
+  LOGIN
+  LOGOUT
+  PASSWORD_CHANGE
+  EMAIL_CHANGE
+  TWO_FACTOR_ENABLED
+  TWO_FACTOR_DISABLED
+  ACCOUNT_CREATED
+  ACCOUNT_DELETED
+  API_KEY_CREATED
+  API_KEY_DELETED
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  key         String    @unique
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Content {
+  id           String       @id @default(cuid())
+  title        String
+  description  String?
+  contentType  ContentType
+  html         String?      @db.Text
+  text         String?      @db.Text
+  keywords     String?
+  status       ContentStatus @default(DRAFT)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId       String?
+  team         Team?        @relation(fields: [teamId], references: [id])
+  versions     ContentVersion[]
+}
+
+enum ContentType {
+  BLOG_POST
+  SOCIAL_MEDIA
+  EMAIL
+  AD_COPY
+  PRODUCT_DESCRIPTION
+  SEO_CONTENT
+  IMAGE
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model ContentVersion {
+  id         String   @id @default(cuid())
+  versionNumber Int
+  html       String?  @db.Text
+  text       String?  @db.Text
+  createdAt  DateTime @default(now())
+  contentId  String
+  content    Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ownerId   String
+  owner     User     @relation("TeamOwner", fields: [ownerId], references: [id])
+  members   User[]   @relation("TeamMembers")
+  contents  Content[]
+}
+
+model Subscription {
+  id             String           @id @default(cuid())
+  userId         String           @unique
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan           SubscriptionPlan
+  status         SubscriptionStatus
+  startDate      DateTime
+  endDate        DateTime?
+  trialEndsAt    DateTime?
+  canceledAt     DateTime?
+  currentPeriodStart DateTime
+  currentPeriodEnd DateTime
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  TRIAL
+}

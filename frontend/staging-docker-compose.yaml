@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3012:3000"
+    env_file:
+      - .env.staging
+    environment:
+      - POSTGRES_URL=${POSTGRES_URL}
+      - BACKEND_URL=http://backend:8000
+      - STRIPE_SECRET=${STRIPE_SECRET}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_BASIC_PRICE_ID=${STRIPE_BASIC_PRICE_ID}
+      - STRIPE_PREMIUM_PRICE_ID=${STRIPE_PREMIUM_PRICE_ID}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - APP_URL=${APP_URL}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - BACKEND_SECRET_KEY=${SECRET_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - frontend-staging-data:/app/.next/cache
+    restart: unless-stopped
+    networks:
+      - aipen-staging-network
+
+volumes:
+  frontend-staging-data:
+
+networks:
+  aipen-staging-network:
+    name: aipen-staging-network
+    external: true
