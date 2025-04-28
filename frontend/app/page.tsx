@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { BookText, MessageSquare, Mail, Lightbulb, ImageIcon, BarChart, CheckCircle, ChevronRight } from "lucide-react"
+import InfiniteWriter from "@/components/infinite-writer"
 
 export default function Home() {
   return (
@@ -19,7 +20,8 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              Create <span className="gradient-text">Amazing Content</span> with AI
+              Create <InfiniteWriter /> <span className="gradient-text">Content</span> with AI
+              {/* Create <span className="gradient-text">Amazing Content</span> with AI */}
             </motion.h1>
             <motion.p
               className="text-xl md:text-2xl text-muted-foreground mb-8"
@@ -35,7 +37,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Link href="/register">
+              <Link href="/auth/register">
                 <Button size="lg" className="gradient-primary">
                   Get Started
                   <ChevronRight className="ml-2 h-4 w-4" />
@@ -357,7 +359,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Link href="/register">
+              <Link href="/auth/register">
                 <Button size="lg" className="gradient-primary">
                   Start Your Free Trial
                   <ChevronRight className="ml-2 h-4 w-4" />

@@ -54,7 +54,7 @@ export default function Header() {
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center space-x-2">
               <Logo className="h-8 w-auto" />
-              <span className="hidden font-bold sm:inline-block text-xl">AI Content Pilot</span>
+              <span className="hidden font-bold lg:inline-block text-xl">AI Content Pilot</span>
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               {navItems.map((item) => (
@@ -79,12 +79,12 @@ export default function Header() {
               <UserNav />
             ) : (
               <div className="hidden md:flex items-center gap-4">
-                <Link href="/login">
+                <Link href="/auth/login">
                   <Button variant="ghost" size="sm">
                     Log in
                   </Button>
                 </Link>
-                <Link href="/register">
+                <Link href="/auth/auth/register">
                   <Button size="sm" className="gradient-primary">
                     Sign up
                   </Button>
@@ -124,12 +124,12 @@ export default function Header() {
                 ))}
                 {!session && (
                   <div className="pt-4 flex flex-col gap-2">
-                    <Link href="/login">
+                    <Link href="/auth/login">
                       <Button variant="outline" className="w-full">
                         Log in
                       </Button>
                     </Link>
-                    <Link href="/register">
+                    <Link href="/auth/auth/register">
                       <Button className="w-full gradient-primary">Sign up</Button>
                     </Link>
                   </div>

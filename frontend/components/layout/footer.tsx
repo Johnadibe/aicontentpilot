@@ -1,7 +1,23 @@
+"use client"
+
 import Link from "next/link";
 import { Logo } from "@/components/logo"
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+    const pathname = usePathname();
+
+    // Don't render footer on auth pages
+    if (
+        pathname === "/auth/login" ||
+        pathname === "/auth/auth/register" ||
+        pathname === "/auth/reset-password" ||
+        pathname === "/auth/forgot-password" ||
+        pathname === "/auth/verify-email"
+    ) {
+        return null;
+    }
+
     return (
         <footer className="bg-muted py-12">
             <div className="container mx-auto px-4">

@@ -418,7 +418,7 @@ export default function BlogPage() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: 0.2 }}
                         >
-                            <Link href="/register">
+                            <Link href="/auth/register">
                                 <Button size="lg" className="gradient-primary">
                                     Start Your Free Trial
                                     <ChevronRight className="ml-2 h-4 w-4" />

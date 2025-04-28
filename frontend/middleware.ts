@@ -26,13 +26,13 @@ export async function middleware(request: NextRequest) {
 
   // If the path is protected and there's no token, redirect to login
   if (isProtectedPath && !token) {
-    const url = new URL(`/login`, request.url)
+    const url = new URL(`/auth/login`, request.url)
     url.searchParams.set("callbackUrl", request.nextUrl.pathname)
     return NextResponse.redirect(url)
   }
 
   // If user is logged in and tries to access auth pages, redirect to dashboard
-  if (token && (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/register"))) {
+  if (token && request.nextUrl.pathname.startsWith("/auth/")) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
@@ -51,7 +51,6 @@ export const config = {
     "/team/:path*",
     "/settings/:path*",
     "/billing/:path*",
-    "/login",
-    "/register",
+    "/auth/:path*",
   ],
 }

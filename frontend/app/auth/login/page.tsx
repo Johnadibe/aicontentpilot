@@ -1,8 +1,5 @@
 import Link from "next/link"
-import Image from "next/image"
 import { LoginForm } from "@/components/auth/login-form"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft } from "lucide-react"
 
 export const metadata = {
   title: "Login - AI Content Pilot",
@@ -18,10 +15,12 @@ export default function LoginPage() {
             <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
             <p className="text-sm text-muted-foreground">Enter your credentials to sign in to your account</p>
           </div>
-          <LoginForm />
+          <div className="p-6 border rounded-lg bg-card shadow-sm">
+            <LoginForm />
+          </div>
           <p className="px-8 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="underline underline-offset-4 hover:text-primary transition-colors">
+            <Link href="/auth/register" className="underline underline-offset-4 hover:text-primary transition-colors">
               Sign up
             </Link>
           </p>

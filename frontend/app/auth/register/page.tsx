@@ -1,8 +1,5 @@
 import Link from "next/link"
-import Image from "next/image"
 import { RegisterForm } from "@/components/auth/register-form"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft } from "lucide-react"
 
 export const metadata = {
   title: "Register - AI Content Pilot",
@@ -18,7 +15,9 @@ export default function RegisterPage() {
             <h1 className="text-2xl font-semibold tracking-tight">Create your account</h1>
             <p className="text-sm text-muted-foreground">Enter your details below to create your account</p>
           </div>
-          <RegisterForm />
+          <div className="p-6 border rounded-lg bg-card shadow-sm">
+            <RegisterForm />
+          </div>
           <p className="px-8 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link href="/login" className="underline underline-offset-4 hover:text-primary transition-colors">

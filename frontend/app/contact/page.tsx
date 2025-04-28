@@ -354,7 +354,7 @@ export default function ContactPage() {
                                     Experience the power of AI-driven content creation with a free trial of AI Content Pilot.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4">
-                                    <Link href="/register">
+                                    <Link href="/auth/register">
                                         <Button className="gradient-primary">
                                             Start Free Trial
                                             <ChevronRight className="ml-2 h-4 w-4" />

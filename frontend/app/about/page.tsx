@@ -249,36 +249,38 @@ export default function AboutPage() {
                             </p>
                         </div>
 
-                        <div className="relative">
+                        <div className="relative px-6 md:px-0">
                             {/* Timeline line */}
-                            <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 h-full w-1 bg-muted"></div>
+                            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-1 bg-muted"></div>
 
-                            <div className="space-y-16">
+                            <div className="space-y-12 md:space-y-16">
                                 {milestones.map((milestone, index) => (
                                     <motion.div
                                         key={index}
-                                        className={`relative flex flex-col md:flex-row gap-8 ${index % 2 === 0 ? "md:flex-row-reverse" : ""
+                                        className={`relative flex flex-col md:flex-row items-start gap-4 md:gap-8 ${index % 2 === 0 ? "md:flex-row-reverse" : ""
                                             }`}
                                         initial={{ opacity: 0, y: 20 }}
                                         whileInView={{ opacity: 1, y: 0 }}
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.5, delay: index * 0.1 }}
                                     >
-                                        <div className="flex-1 md:text-right md:pr-8">
-                                            <div
-                                                className={`${index % 2 === 0 ? "md:text-right" : "md:text-left"
-                                                    }`}
-                                            >
+                                        {/* Content */}
+                                        <div className="ml-10 md:ml-0 flex-1 md:w-1/2">
+                                            <div className={`p-4 bg-card border rounded-lg shadow-sm ${index % 2 === 0 ? "md:text-right md:pr-6" : "md:text-left md:pl-6"
+                                                }`}>
                                                 <span className="text-primary font-bold text-lg block mb-2">{milestone.year}</span>
                                                 <h3 className="text-xl font-bold mb-2">{milestone.title}</h3>
                                                 <p className="text-muted-foreground">{milestone.description}</p>
                                             </div>
                                         </div>
+
                                         {/* Timeline dot */}
-                                        <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                        <div className="absolute left-6 md:left-1/2 top-4 transform -translate-x-1/2 w-8 h-8 rounded-full bg-primary flex items-center justify-center z-10">
                                             <div className="w-4 h-4 rounded-full bg-background"></div>
                                         </div>
-                                        <div className="flex-1 md:pl-8"></div>
+
+                                        {/* Empty div for the other side (needed for layout) */}
+                                        <div className="hidden md:block flex-1 md:w-1/2"></div>
                                     </motion.div>
                                 ))}
                             </div>
@@ -385,8 +387,29 @@ export default function AboutPage() {
                             </p>
                         </div>
 
-                        <div className="flex flex-wrap justify-center gap-12 items-center">
-                            {[1, 2, 3, 4, 5].map((_, index) => (
+                        <div className="flex flex-wrap justify-center gap-8 md:gap-12 items-center">
+                            {[
+                                {
+                                    name: "Google Ventures",
+                                    logo: "https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+                                },
+                                {
+                                    name: "SoftBank Vision Fund",
+                                    logo: "https://images.unsplash.com/photo-1611944212129-29977ae1398c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+                                },
+                                {
+                                    name: "Tiger Global",
+                                    logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+                                },
+                                {
+                                    name: "Founders Fund",
+                                    logo: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+                                },
+                                {
+                                    name: "Insight Partners",
+                                    logo: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80"
+                                }
+                            ].map((investor, index) => (
                                 <motion.div
                                     key={index}
                                     className="grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all"
@@ -395,7 +418,14 @@ export default function AboutPage() {
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.5, delay: index * 0.1 }}
                                 >
-                                    <div className="h-12 w-32 bg-muted rounded-md"></div>
+                                    <div className="h-16 w-40 overflow-hidden rounded-md">
+                                        <img
+                                            src={investor.logo}
+                                            alt={`${investor.name} logo`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-center mt-2 text-muted-foreground">{investor.name}</p>
                                 </motion.div>
                             ))}
                         </div>
