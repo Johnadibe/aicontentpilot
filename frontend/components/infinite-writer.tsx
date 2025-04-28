@@ -78,7 +78,7 @@ export default function InfiniteWriter() {
     const words = [
         { text: "Amazing", gradient: "from-purple-500 to-blue-500" },
         { text: "Powerful", gradient: "from-pink-500 to-red-500" },
-        { text: "Engaging", gradient: "from-amber-500 to-orange-500" },
+        { text: "Stunning", gradient: "from-amber-500 to-orange-500" },
         { text: "Effective", gradient: "from-emerald-500 to-teal-500" },
     ]
 
