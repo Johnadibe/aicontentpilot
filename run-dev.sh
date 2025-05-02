@@ -1,29 +1,10 @@
-#!/bin/bash
-
-# Run the application in development environment
-echo "Starting AIPenPilot in development environment..."
-
-# Create networks if they don't exist
+# Check if networks exist, create if they don't
 ./setup-networks.sh
 
-# Run backend
-cd backend
-# Load environment variables from .env.dev file
-echo "Loading backend environment variables from .env.dev..."
-export $(grep -v '^#' .env.dev | xargs)
-# Run docker-compose with env file explicitly specified
-docker-compose -f dev-docker-compose.yaml --env-file .env.dev up -d --build
-cd ..
+# Start the development environment
+echo "Starting development environment..."
+docker compose -f dev-docker-compose.yaml up -d --build
 
-# Run frontend
-cd frontend
-# Load environment variables from .env.dev file
-echo "Loading frontend environment variables from .env.dev..."
-export $(grep -v '^#' .env.dev | xargs)
-# Run docker-compose with env file explicitly specified
-docker-compose -f dev-docker-compose.yaml --env-file .env.dev up -d --build
-cd ..
-
-echo "AIPenPilot development environment is running!"
-echo "Frontend: http://localhost:3010"
-echo "Backend: http://localhost:3011"
+echo "Development environment started successfully."
+echo "Frontend available at: http://localhost:3000"
+echo "Backend API available at: http://localhost:8000"

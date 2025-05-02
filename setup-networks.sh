@@ -1,18 +1,27 @@
-#!/bin/bash
+# Create Docker networks if they don't exist
 
-# Create Docker networks for different environments
-echo "Creating Docker networks for different environments..."
+# Check if development network exists
+if ! docker network inspect aicontentpilot-dev-network >/dev/null 2>&1; then
+  echo "Creating development network: aicontentpilot-dev-network"
+  docker network create aicontentpilot-dev-network
+else
+  echo "Development network already exists: aicontentpilot-dev-network"
+fi
 
-# Dev network
-docker network create aipen-network || true
-echo "Created aipen-network for development environment"
+# Check if staging network exists
+if ! docker network inspect aicontentpilot-staging-network >/dev/null 2>&1; then
+  echo "Creating staging network: aicontentpilot-staging-network"
+  docker network create aicontentpilot-staging-network
+else
+  echo "Staging network already exists: aicontentpilot-staging-network"
+fi
 
-# Staging network
-docker network create aipen-staging-network || true
-echo "Created aipen-staging-network for staging environment"
+# Check if production network exists
+if ! docker network inspect aicontentpilot-prod-network >/dev/null 2>&1; then
+  echo "Creating production network: aicontentpilot-prod-network"
+  docker network create aicontentpilot-prod-network
+else
+  echo "Production network already exists: aicontentpilot-prod-network"
+fi
 
-# Production network
-docker network create aipen-prod-network || true
-echo "Created aipen-prod-network for production environment"
-
-echo "Docker networks setup complete!"
+echo "Network setup complete."

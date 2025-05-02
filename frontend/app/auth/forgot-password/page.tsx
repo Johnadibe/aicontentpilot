@@ -2,117 +2,134 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { requestPasswordReset } from "@/lib/actions/user"
-import { Loader2, CheckCircle, ChevronLeft } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { ArrowLeft, CheckCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-const formSchema = z.object({
-  email: z.string().email("Please enter a valid email address."),
+const forgotPasswordSchema = z.object({
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
 })
 
-type FormData = z.infer<typeof formSchema>
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
 
 export default function ForgotPasswordPage() {
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
     },
   })
 
-  async function onSubmit(values: FormData) {
-    setIsLoading(true)
+  async function onSubmit(data: ForgotPasswordFormValues) {
     try {
-      await requestPasswordReset(values.email)
+      setIsLoading(true)
+      setError(null)
+
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send reset link")
+      }
+
+      // Show success toast
+      toast({
+        title: "Reset link sent",
+        description: "Check your email for a link to reset your password.",
+      })
+
       setIsSubmitted(true)
     } catch (error) {
-      console.error("Error requesting password reset:", error)
-      // We don't show errors for security reasons
+      console.error("Forgot password error:", error)
+      setError(error instanceof Error ? error.message : "There was a problem sending the reset link. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <Link href="/login" className="absolute left-4 top-4 md:left-8 md:top-8 flex items-center">
-        <Button variant="ghost" size="sm" className="gap-1">
-          <ChevronLeft className="h-4 w-4" />
-          Back to Login
-        </Button>
-      </Link>
+    <>
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-bold tracking-tight">Reset your password</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Enter your email address and we&apos;ll send you a link to reset your password.
+        </p>
+      </div>
 
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
-          <CardDescription className="text-center">
-            {isSubmitted
-              ? "Check your email for a reset link"
-              : "Enter your email address and we'll send you a link to reset your password"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isSubmitted ? (
-            <div className="flex flex-col items-center space-y-4 py-4">
-              <CheckCircle className="h-12 w-12 text-green-500" />
-              <div className="text-center space-y-2">
-                <p className="font-medium">Reset link sent!</p>
-                <p className="text-muted-foreground">
-                  If an account exists with the email you entered, we've sent a link to reset your password.
-                </p>
-                <p className="text-muted-foreground">
-                  Please check your email and follow the instructions to reset your password.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="name@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    "Send Reset Link"
-                  )}
-                </Button>
-              </form>
-            </Form>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <div className="text-center text-sm text-muted-foreground">
-            Remember your password?{" "}
-            <Link href="/login" className="underline underline-offset-4 hover:text-primary">
-              Back to login
-            </Link>
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {isSubmitted ? (
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+            <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
           </div>
-        </CardFooter>
-      </Card>
-    </div>
+          <h3 className="mt-4 text-lg font-medium">Check your email</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            We&apos;ve sent a password reset link to {form.getValues().email}
+          </p>
+          <div className="mt-6">
+            <Button variant="outline" className="mx-auto" onClick={() => setIsSubmitted(false)}>
+              Try another email
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="john.doe@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" className="w-full gradient-primary" disabled={isLoading}>
+              {isLoading ? "Sending..." : "Send reset link"}
+            </Button>
+
+            <div className="text-center">
+              <Link href="/auth/login" className="inline-flex items-center text-sm text-primary hover:text-primary/90">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to login
+              </Link>
+            </div>
+          </form>
+        </Form>
+      )}
+    </>
   )
 }

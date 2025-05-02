@@ -2,18 +2,16 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { Toaster } from "@/components/ui/toaster"
-import { Analytics } from "@/components/analytics"
-import Header from "@/components/layout/header"
-import { Suspense } from "react"
 import { Providers } from "./providers"
-import Footer from "@/components/layout/footer"
+import { Toaster } from "@/components/ui/toaster"
+import { MarketingHeader } from "@/components/marketing/header"
+import { MarketingFooter } from "@/components/marketing/footer"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "AI Content Pilot - AI-Powered Content Creation Platform",
-  description: "Create high-quality content with AI assistance for blogs, social media, emails, and more.",
+  description: "AI-powered content creation platform. Create high-quality content with AI assistance for blogs, social media, emails, and more.",
   keywords: ["AI content creation", "content generation", "content marketing", "AI writing assistant", "SEO content"],
   authors: [{ name: "AI Content Pilot" }],
   openGraph: {
@@ -23,14 +21,6 @@ export const metadata: Metadata = {
     title: "AI Content Pilot - AI-Powered Content Creation Platform",
     description: "Create high-quality content with AI assistance for blogs, social media, emails, and more.",
     siteName: "AI Content Pilot",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AI Content Pilot - AI-Powered Content Creation Platform",
-    description: "Create high-quality content with AI assistance for blogs, social media, emails, and more.",
-  },
-  icons: {
-    icon: '/favicon.ico',
   },
 }
 
@@ -50,13 +40,12 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <Providers>
-          <Suspense>
-            <Header />
-            <main className="flex-grow px-4 sm:px-6 md:px-8 lg:px-12 max-w-screen-2xl mx-auto w-full">{children}</main>
-            <Footer />
-          </Suspense>
+          <div className="flex min-h-screen flex-col overflow-x-hidden">
+            <MarketingHeader />
+            <main className="flex-1">{children}</main>
+            <MarketingFooter />
+          </div>
           <Toaster />
-          <Analytics />
         </Providers>
       </body>
     </html>

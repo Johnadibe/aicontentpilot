@@ -5,56 +5,58 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    restart: always
     ports:
-      - "3010:3000"
+      - "3000:3000"
     environment:
-      - POSTGRES_URL=${POSTGRES_URL}
       - BACKEND_URL=http://backend:8000
-      - STRIPE_SECRET=${STRIPE_SECRET}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-      - STRIPE_BASIC_PRICE_ID=${STRIPE_BASIC_PRICE_ID}
-      - STRIPE_PREMIUM_PRICE_ID=${STRIPE_PREMIUM_PRICE_ID}
-      - APP_URL=${APP_URL}
-      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3010}
-      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3010}
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - RESEND_API_KEY=${RESEND_API_KEY}
-      - BACKEND_SECRET_KEY=${SECRET_KEY}
-      - SECRET_KEY=${SECRET_KEY}
-    volumes:
-      - frontend-data:/app/.next/cache
-    restart: unless-stopped
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+    networks:
+      - aicontentpilot-network
     depends_on:
       - backend
-    networks:
-      - aipen-network
+      - db
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    restart: always
     ports:
-      - "3011:8000"
+      - "8000:8000"
     environment:
-      - SECRET_KEY=${SECRET_KEY}
-      - ALGORITHM=HS256
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3010}
-      - DATABASE_URL=${POSTGRES_URL}
-      - deepseek_api_key=${deepseek_api_key}
-      - deepseek_api_base=${deepseek_api_base}
-    volumes:
-      - backend-data:/app/data
-    restart: unless-stopped
+      - FRONTEND_URL=http://frontend:3000
+      - DATABASE_URL=${DATABASE_URL}
     networks:
-      - aipen-network
+      - aicontentpilot-network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aicontentpilot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - aicontentpilot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d aicontentpilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  frontend-data:
-  backend-data:
+  postgres_data:
+    name: aicontentpilot_postgres_data
 
 networks:
-  aipen-network:
-    name: aipen-network
+  aicontentpilot-network:
+    name: aicontentpilot-network

@@ -1,28 +1,26 @@
 "use client"
 
-import { useState, Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { resetPassword } from "@/lib/actions/user"
-import { Loader2, CheckCircle, XCircle, ChevronLeft } from "lucide-react"
-import { PasswordStrengthMeter } from "@/components/auth/password-strength-meter"
+import type React from "react"
 
-const formSchema = z
+import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Progress } from "@/components/ui/progress"
+import { useToast } from "@/hooks/use-toast"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+
+const resetPasswordSchema = z
   .object({
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters.")
-      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/[0-9]/, "Password must contain at least one number")
-      .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+    password: z.string().min(8, {
+      message: "Password must be at least 8 characters.",
+    }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -30,163 +28,259 @@ const formSchema = z
     path: ["confirmPassword"],
   })
 
-type FormData = z.infer<typeof formSchema>
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>
 
-function ResetPasswordContent() {
+export default function ResetPasswordPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const token = searchParams?.get("token")
-
+  const token = searchParams.get("token")
+  const { toast } = useToast()
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [passwordStrength, setPasswordStrength] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       password: "",
       confirmPassword: "",
     },
   })
 
-  const password = form.watch("password")
+  const calculatePasswordStrength = (password: string) => {
+    if (!password) return 0
 
-  async function onSubmit(values: FormData) {
+    let strength = 0
+    // Length check
+    if (password.length >= 8) strength += 20
+    if (password.length >= 12) strength += 10
+
+    // Character variety checks
+    if (/[A-Z]/.test(password)) strength += 20 // Has uppercase
+    if (/[a-z]/.test(password)) strength += 15 // Has lowercase
+    if (/[0-9]/.test(password)) strength += 15 // Has number
+    if (/[^A-Za-z0-9]/.test(password)) strength += 20 // Has special char
+
+    return Math.min(100, strength)
+  }
+
+  const getStrengthColor = (strength: number) => {
+    if (strength < 30) return "bg-red-500"
+    if (strength < 60) return "bg-yellow-500"
+    return "bg-green-500"
+  }
+
+  const getStrengthText = (strength: number) => {
+    if (strength < 30) return "Weak"
+    if (strength < 60) return "Medium"
+    return "Strong"
+  }
+
+  const onPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newStrength = calculatePasswordStrength(e.target.value)
+    setPasswordStrength(newStrength)
+    form.setValue("password", e.target.value)
+  }
+
+  async function onSubmit(data: ResetPasswordFormValues) {
     if (!token) {
-      setError("No reset token provided")
+      setError("The password reset link is invalid or has expired.")
       return
     }
 
-    setIsLoading(true)
     try {
-      await resetPassword(token, values.password)
-      setIsSuccess(true)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to reset password")
+      setIsLoading(true)
+      setError(null)
+
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token,
+          password: data.password,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to reset password")
+      }
+
+      // Show success toast
+      toast({
+        title: "Password reset successful!",
+        description: "Your password has been reset. You can now log in with your new password.",
+      })
+
+      // Redirect to login page
+      router.push("/auth/login")
+    } catch (error) {
+      console.error("Reset password error:", error)
+      setError(
+        error instanceof Error ? error.message : "There was a problem resetting your password. Please try again.",
+      )
     } finally {
       setIsLoading(false)
     }
   }
 
-  return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <Link href="/login" className="absolute left-4 top-4 md:left-8 md:top-8 flex items-center">
-        <Button variant="ghost" size="sm" className="gap-1">
-          <ChevronLeft className="h-4 w-4" />
-          Back to Login
+  if (!token) {
+    return (
+      <div className="text-center">
+        <h1 className="text-2xl font-bold tracking-tight mb-4">Invalid Reset Link</h1>
+        <p className="text-muted-foreground mb-6">
+          The password reset link is invalid or has expired. Please request a new password reset link.
+        </p>
+        <Button onClick={() => router.push("/auth/forgot-password")} className="gradient-primary">
+          Request New Link
         </Button>
-      </Link>
-
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
-          <CardDescription className="text-center">
-            {isSuccess
-              ? "Your password has been reset successfully"
-              : error
-                ? "There was an error resetting your password"
-                : "Create a new password for your account"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isSuccess ? (
-            <div className="flex flex-col items-center space-y-4 py-4">
-              <CheckCircle className="h-12 w-12 text-green-500" />
-              <div className="text-center space-y-2">
-                <p className="font-medium">Password reset successful!</p>
-                <p className="text-muted-foreground">
-                  Your password has been reset successfully. You can now log in with your new password.
-                </p>
-              </div>
-            </div>
-          ) : error ? (
-            <div className="flex flex-col items-center space-y-4 py-4">
-              <XCircle className="h-12 w-12 text-destructive" />
-              <div className="text-center space-y-2">
-                <p className="font-medium">Reset failed</p>
-                <p className="text-muted-foreground">{error}</p>
-              </div>
-            </div>
-          ) : (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>New Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <PasswordStrengthMeter password={password} />
-                      <FormDescription>
-                        Password must be at least 8 characters and include uppercase, lowercase, number, and special
-                        character.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Resetting...
-                    </>
-                  ) : (
-                    "Reset Password"
-                  )}
-                </Button>
-              </form>
-            </Form>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          {isSuccess ? (
-            <Button onClick={() => router.push("/login")} className="gradient-primary">
-              Go to Login
-            </Button>
-          ) : (
-            <div className="text-center text-sm text-muted-foreground">
-              Remember your password?{" "}
-              <Link href="/login" className="underline underline-offset-4 hover:text-primary">
-                Back to login
-              </Link>
-            </div>
-          )}
-        </CardFooter>
-      </Card>
-    </div>
-  )
-}
-
-export default function ResetPasswordPage() {
-  return (
-    <Suspense fallback={
-      <div className="container flex h-screen w-screen flex-col items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex flex-col items-center justify-center space-y-4 pt-6">
-            <Loader2 className="h-16 w-16 animate-spin text-primary" />
-            <p className="text-center text-muted-foreground">Loading...</p>
-          </CardContent>
-        </Card>
       </div>
-    }>
-      <ResetPasswordContent />
-    </Suspense>
+    )
+  }
+
+  return (
+    <>
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-bold tracking-tight">Reset your password</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Enter your new password below.</p>
+      </div>
+
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field: { onChange, ...fieldProps } }) => (
+              <FormItem>
+                <FormLabel>New Password</FormLabel>
+                <div className="relative">
+                  <FormControl>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      onChange={onPasswordChange}
+                      {...fieldProps}
+                    />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                  </Button>
+                </div>
+                {form.watch("password") && (
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span>Password strength:</span>
+                      <span
+                        className={
+                          passwordStrength > 59
+                            ? "text-green-500"
+                            : passwordStrength > 29
+                              ? "text-yellow-500"
+                              : "text-red-500"
+                        }
+                      >
+                        {getStrengthText(passwordStrength)}
+                      </span>
+                    </div>
+                    <Progress value={passwordStrength} className={`h-1 w-full ${getStrengthColor(passwordStrength)}`} />
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-1">
+                        {/[A-Z]/.test(form.watch("password")) ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <XCircle className="h-3 w-3 text-muted-foreground" />
+                        )}
+                        <span>Uppercase</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {/[a-z]/.test(form.watch("password")) ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <XCircle className="h-3 w-3 text-muted-foreground" />
+                        )}
+                        <span>Lowercase</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {/[0-9]/.test(form.watch("password")) ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <XCircle className="h-3 w-3 text-muted-foreground" />
+                        )}
+                        <span>Number</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {/[^A-Za-z0-9]/.test(form.watch("password")) ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <XCircle className="h-3 w-3 text-muted-foreground" />
+                        )}
+                        <span>Special char</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm New Password</FormLabel>
+                <div className="relative">
+                  <FormControl>
+                    <Input type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="sr-only">{showConfirmPassword ? "Hide password" : "Show password"}</span>
+                  </Button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full gradient-primary" disabled={isLoading}>
+            {isLoading ? "Resetting..." : "Reset Password"}
+          </Button>
+        </form>
+      </Form>
+    </>
   )
 }

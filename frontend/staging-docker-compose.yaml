@@ -5,36 +5,48 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+    restart: always
     ports:
-      - "3012:3000"
+      - "3034:3000"
     env_file:
       - .env.staging
     environment:
-      - POSTGRES_URL=${POSTGRES_URL}
       - BACKEND_URL=http://backend:8000
-      - STRIPE_SECRET=${STRIPE_SECRET}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-      - STRIPE_BASIC_PRICE_ID=${STRIPE_BASIC_PRICE_ID}
-      - STRIPE_PREMIUM_PRICE_ID=${STRIPE_PREMIUM_PRICE_ID}
-      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
-      - APP_URL=${APP_URL}
+      - DATABASE_URL=${DATABASE_URL}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - RESEND_API_KEY=${RESEND_API_KEY}
-      - BACKEND_SECRET_KEY=${SECRET_KEY}
-      - SECRET_KEY=${SECRET_KEY}
-    volumes:
-      - frontend-staging-data:/app/.next/cache
-    restart: unless-stopped
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
     networks:
-      - aipen-staging-network
+      - aicontentpilot-staging-network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aicontentpilot_staging
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+    networks:
+      - aicontentpilot-staging-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d aicontentpilot_staging"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  frontend-staging-data:
+  postgres_data_staging:
+    name: aicontentpilot_postgres_data_staging
 
 networks:
-  aipen-staging-network:
-    name: aipen-staging-network
+  aicontentpilot-staging-network:
+    name: aicontentpilot-staging-network
     external: true

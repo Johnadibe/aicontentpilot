@@ -1,29 +1,10 @@
-#!/bin/bash
-
-# Run the application in production environment
-echo "Starting AIPenPilot in production environment..."
-
-# Create networks if they don't exist
+# Check if networks exist, create if they don't
 ./setup-networks.sh
 
-# Run backend
-cd backend
-# Load environment variables from .env.prod file
-echo "Loading backend environment variables from .env.prod..."
-export $(grep -v '^#' .env.prod | xargs)
-# Run docker-compose with env file explicitly specified
-docker-compose -f prod-docker-compose.yaml --env-file .env.prod up -d --build
-cd ..
+# Start the production environment
+echo "Starting production environment..."
+docker compose -f prod-docker-compose.yaml up -d --build
 
-# Run frontend
-cd frontend
-# Load environment variables from .env.prod file
-echo "Loading frontend environment variables from .env.prod..."
-export $(grep -v '^#' .env.prod | xargs)
-# Run docker-compose with env file explicitly specified
-docker-compose -f prod-docker-compose.yaml --env-file .env.prod up -d --build
-cd ..
-
-echo "AIPenPilot production environment is running!"
-echo "Frontend: http://localhost:3013"
-echo "Backend: http://localhost:3015"
+echo "Production environment started successfully."
+echo "Frontend available at: http://localhost:3000"
+echo "Backend API available at: http://localhost:8000"

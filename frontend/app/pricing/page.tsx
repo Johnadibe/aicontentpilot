@@ -1,257 +1,387 @@
-"use client"
+import type { Metadata } from "next"
+import Link from "next/link"
+import { CheckIcon } from "lucide-react"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { CheckCircle, Zap, Shield, Globe, Users, Database, Clock, MessageSquare, ChevronDown, ChevronUp } from "lucide-react"
-import { motion } from "framer-motion"
+import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const plans = [
-    {
-        name: "Starter",
-        price: "$29",
-        period: "per month",
-        description: "Perfect for individuals and small teams",
-        features: [
-            "5,000 words per month",
-            "Basic AI content generation",
-            "Email support",
-            "Content analytics",
-            "1 user",
-        ],
-        cta: "Get Started",
-        popular: false,
-    },
-    {
-        name: "Professional",
-        price: "$99",
-        period: "per month",
-        description: "Ideal for growing businesses",
-        features: [
-            "50,000 words per month",
-            "Advanced AI content generation",
-            "Priority support",
-            "Advanced analytics",
-            "5 users",
-            "API access",
-            "Custom templates",
-        ],
-        cta: "Start Free Trial",
-        popular: true,
-    },
-    {
-        name: "Enterprise",
-        price: "Custom",
-        period: "per month",
-        description: "For large organizations with custom needs",
-        features: [
-            "Unlimited words",
-            "Custom AI models",
-            "Dedicated support",
-            "Advanced security",
-            "Unlimited users",
-            "Custom integrations",
-            "SLA guarantee",
-        ],
-        cta: "Contact Sales",
-        popular: false,
-    },
-]
+export const metadata: Metadata = {
+  title: "Pricing | AI Content Pilot",
+  description: "Choose the perfect plan for your content creation needs",
+}
 
-const features = [
-    {
-        title: "High Performance",
-        description: "Lightning-fast content generation with minimal latency",
-        icon: <Zap className="h-6 w-6" />,
-    },
-    {
-        title: "Enterprise Security",
-        description: "Bank-grade security with end-to-end encryption",
-        icon: <Shield className="h-6 w-6" />,
-    },
-    {
-        title: "Global Infrastructure",
-        description: "Content delivery optimized for global audiences",
-        icon: <Globe className="h-6 w-6" />,
-    },
-    {
-        title: "Team Collaboration",
-        description: "Work together with your team on content creation",
-        icon: <Users className="h-6 w-6" />,
-    },
-    {
-        title: "Data Export",
-        description: "Export your content in multiple formats",
-        icon: <Database className="h-6 w-6" />,
-    },
-    {
-        title: "24/7 Support",
-        description: "Round-the-clock support for all your needs",
-        icon: <Clock className="h-6 w-6" />,
-    },
-    {
-        title: "Community Access",
-        description: "Join our community of content creators",
-        icon: <MessageSquare className="h-6 w-6" />,
-    },
-]
+interface PricingProps {
+  title: string
+  description: string
+  price: string
+  duration: string
+  popular?: boolean
+  features: string[]
+  buttonText: string
+  buttonLink: string
+  buttonVariant?: "default" | "outline"
+}
 
-const faqs = [
-    {
-        question: "Can I change plans later?",
-        answer: "Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.",
-    },
-    {
-        question: "Is there a free trial?",
-        answer: "Yes, we offer a 14-day free trial for all plans. No credit card required.",
-    },
-    {
-        question: "What payment methods do you accept?",
-        answer: "We accept all major credit cards, PayPal, and bank transfers for annual plans.",
-    },
-    {
-        question: "Do you offer refunds?",
-        answer: "Yes, we offer a 30-day money-back guarantee if you're not satisfied with our service.",
-    },
-]
+function PricingCard({
+  title,
+  description,
+  price,
+  duration,
+  popular,
+  features,
+  buttonText,
+  buttonLink,
+  buttonVariant = "default",
+}: PricingProps) {
+  return (
+    <Card
+      className={cn("flex flex-col", {
+        "border-primary shadow-md": popular,
+      })}
+    >
+      {popular && (
+        <div className="rounded-t-lg bg-primary py-1 text-center text-sm font-medium text-primary-foreground">
+          Most Popular
+        </div>
+      )}
+      <CardHeader>
+        <CardTitle className="text-xl">{title}</CardTitle>
+        <CardDescription className="min-h-[60px]">{description}</CardDescription>
+      </CardHeader>
+      <CardContent className="grid flex-1 place-items-start gap-6">
+        <div className="flex items-baseline text-slate-900 dark:text-slate-50">
+          <span className="text-4xl font-bold tracking-tight">{price}</span>
+          <span className="ml-1 text-sm font-medium text-muted-foreground">{duration}</span>
+        </div>
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          {features.map((feature) => (
+            <li key={feature} className="flex items-center">
+              <CheckIcon className="mr-2 h-4 w-4 text-primary" />
+              {feature}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+      <CardFooter className="pt-4">
+        <Link
+          href={buttonLink}
+          className={cn(
+            buttonVariants({
+              variant: buttonVariant,
+              size: "lg",
+            }),
+            "w-full",
+          )}
+        >
+          {buttonText}
+        </Link>
+      </CardFooter>
+    </Card>
+  )
+}
 
 export default function PricingPage() {
-    const [openFaqIndex, setOpenFaqIndex] = useState(0)
+  return (
+    <div className="container flex flex-col items-center py-20">
+      <div className="mx-auto mb-10 max-w-[58rem] text-center">
+        <h1 className="font-heading text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl">
+          Simple, transparent pricing
+        </h1>
+        <p className="mt-4 text-xl text-muted-foreground">Choose the perfect plan for your content creation needs</p>
+      </div>
 
-    const toggleFaq = (index: number) => {
-        setOpenFaqIndex(openFaqIndex === index ? -1 : index)
-    }
+      <div className="mb-8">
+        <Tabs defaultValue="monthly" className="w-full">
+          <div className="flex justify-center">
+            <TabsList className="grid w-[300px] grid-cols-2">
+              <TabsTrigger value="monthly">Monthly</TabsTrigger>
+              <TabsTrigger value="yearly">Yearly (Save 20%)</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="monthly" className="mt-6">
+            <div className="mx-auto grid max-w-screen-lg gap-5 py-8 md:grid-cols-2 lg:grid-cols-4">
+              <PricingCard
+                title="Free"
+                description="Basic content creation for individuals just getting started"
+                price="$0"
+                duration="/month"
+                features={[
+                  "5,000 words per month",
+                  "5 AI images per month",
+                  "3 content templates",
+                  "Basic content editor",
+                  "Email support",
+                ]}
+                buttonText="Get Started"
+                buttonLink="/auth/register"
+                buttonVariant="outline"
+              />
+              <PricingCard
+                title="Starter"
+                description="Perfect for individuals and small projects"
+                price="$29"
+                duration="/month"
+                features={[
+                  "50,000 words per month",
+                  "50 AI images per month",
+                  "All content templates",
+                  "Advanced content editor",
+                  "Content optimization tools",
+                  "Priority email support",
+                  "API access (100 calls/day)",
+                ]}
+                buttonText="Subscribe"
+                buttonLink="/subscription/checkout?plan=starter"
+              />
+              <PricingCard
+                title="Professional"
+                description="Ideal for growing businesses and content creators"
+                price="$79"
+                duration="/month"
+                popular={true}
+                features={[
+                  "200,000 words per month",
+                  "100 AI images per month",
+                  "All content templates",
+                  "Advanced content editor",
+                  "All optimization tools",
+                  "Priority support",
+                  "API access (500 calls/day)",
+                  "Team collaboration (3 seats)",
+                  "Custom templates",
+                ]}
+                buttonText="Subscribe"
+                buttonLink="/subscription/checkout?plan=professional"
+              />
+              <PricingCard
+                title="Enterprise"
+                description="For teams and agencies with high-volume needs"
+                price="$199"
+                duration="/month"
+                features={[
+                  "1,000,000 words per month",
+                  "500 AI images per month",
+                  "All content templates",
+                  "Advanced content editor",
+                  "All optimization tools",
+                  "Dedicated support",
+                  "Unlimited API access",
+                  "Team collaboration (10 seats)",
+                  "Custom templates",
+                  "White-label options",
+                  "Custom integrations",
+                ]}
+                buttonText="Contact Sales"
+                buttonLink="/contact-sales"
+              />
+            </div>
+          </TabsContent>
+          <TabsContent value="yearly" className="mt-6">
+            <div className="mx-auto grid max-w-screen-lg gap-5 py-8 md:grid-cols-2 lg:grid-cols-4">
+              <PricingCard
+                title="Free"
+                description="Basic content creation for individuals just getting started"
+                price="$0"
+                duration="/month"
+                features={[
+                  "5,000 words per month",
+                  "5 AI images per month",
+                  "3 content templates",
+                  "Basic content editor",
+                  "Email support",
+                ]}
+                buttonText="Get Started"
+                buttonLink="/auth/register"
+                buttonVariant="outline"
+              />
+              <PricingCard
+                title="Starter"
+                description="Perfect for individuals and small projects"
+                price="$23"
+                duration="/month"
+                features={[
+                  "50,000 words per month",
+                  "50 AI images per month",
+                  "All content templates",
+                  "Advanced content editor",
+                  "Content optimization tools",
+                  "Priority email support",
+                  "API access (100 calls/day)",
+                ]}
+                buttonText="Subscribe"
+                buttonLink="/subscription/checkout?plan=starter-yearly"
+              />
+              <PricingCard
+                title="Professional"
+                description="Ideal for growing businesses and content creators"
+                price="$63"
+                duration="/month"
+                popular={true}
+                features={[
+                  "200,000 words per month",
+                  "100 AI images per month",
+                  "All content templates",
+                  "Advanced content editor",
+                  "All optimization tools",
+                  "Priority support",
+                  "API access (500 calls/day)",
+                  "Team collaboration (3 seats)",
+                  "Custom templates",
+                ]}
+                buttonText="Subscribe"
+                buttonLink="/subscription/checkout?plan=professional-yearly"
+              />
+              <PricingCard
+                title="Enterprise"
+                description="For teams and agencies with high-volume needs"
+                price="$159"
+                duration="/month"
+                features={[
+                  "1,000,000 words per month",
+                  "500 AI images per month",
+                  "All content templates",
+                  "Advanced content editor",
+                  "All optimization tools",
+                  "Dedicated support",
+                  "Unlimited API access",
+                  "Team collaboration (10 seats)",
+                  "Custom templates",
+                  "White-label options",
+                  "Custom integrations",
+                ]}
+                buttonText="Contact Sales"
+                buttonLink="/contact-sales"
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
 
-    return (
-        <div className="flex flex-col min-h-screen">
-            {/* Hero Section */}
-            <section className="py-20 md:py-28 bg-gradient-to-b from-background to-background/80">
-                <div className="container mx-auto px-4">
-                    <motion.div
-                        className="text-center mb-16"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <h1 className="text-4xl md:text-5xl font-bold mb-4">Simple, Transparent Pricing</h1>
-                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                            Choose the perfect plan for your content needs. No hidden fees.
-                        </p>
-                    </motion.div>
+      <div className="mx-auto mt-8 max-w-[58rem] text-center">
+        <h2 className="font-heading text-3xl font-bold">Compare Plans</h2>
+        <p className="mt-2 text-muted-foreground">Find the perfect plan for your content creation needs</p>
+      </div>
 
-                    {/* Pricing Plans */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
-                        {plans.map((plan, index) => (
-                            <motion.div
-                                key={index}
-                                className={`relative rounded-xl border bg-background p-8 ${plan.popular ? "border-primary shadow-lg" : ""}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                            >
-                                {plan.popular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                                        <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm">
-                                            Most Popular
-                                        </span>
-                                    </div>
-                                )}
-                                <div className="text-center mb-6">
-                                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                                    <div className="flex items-center justify-center gap-1">
-                                        <span className="text-4xl font-bold">{plan.price}</span>
-                                        <span className="text-muted-foreground">{plan.period}</span>
-                                    </div>
-                                    <p className="text-muted-foreground mt-2">{plan.description}</p>
-                                </div>
-                                <ul className="space-y-4 mb-8">
-                                    {plan.features.map((feature, i) => (
-                                        <li key={i} className="flex items-center gap-2">
-                                            <CheckCircle className="h-5 w-5 text-primary" />
-                                            <span>{feature}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                                <Button
-                                    className={`w-full ${plan.popular ? "bg-primary hover:bg-primary/90" : "bg-secondary hover:bg-secondary/90"}`}
-                                >
-                                    {plan.cta}
-                                </Button>
-                            </motion.div>
-                        ))}
-                    </div>
+      <div className="mt-8 w-full max-w-screen-lg overflow-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b">
+              <th className="py-4 text-left font-medium">Features</th>
+              <th className="py-4 text-center font-medium">Free</th>
+              <th className="py-4 text-center font-medium">Starter</th>
+              <th className="py-4 text-center font-medium">Professional</th>
+              <th className="py-4 text-center font-medium">Enterprise</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b">
+              <td className="py-4 font-medium">Words per month</td>
+              <td className="py-4 text-center">5,000</td>
+              <td className="py-4 text-center">50,000</td>
+              <td className="py-4 text-center">200,000</td>
+              <td className="py-4 text-center">1,000,000</td>
+            </tr>
+            <tr className="border-b">
+              <td className="py-4 font-medium">AI images per month</td>
+              <td className="py-4 text-center">5</td>
+              <td className="py-4 text-center">50</td>
+              <td className="py-4 text-center">100</td>
+              <td className="py-4 text-center">500</td>
+            </tr>
+            <tr className="border-b">
+              <td className="py-4 font-medium">Content templates</td>
+              <td className="py-4 text-center">3</td>
+              <td className="py-4 text-center">All</td>
+              <td className="py-4 text-center">All + Custom</td>
+              <td className="py-4 text-center">All + Custom</td>
+            </tr>
+            <tr className="border-b">
+              <td className="py-4 font-medium">Content editor</td>
+              <td className="py-4 text-center">Basic</td>
+              <td className="py-4 text-center">Advanced</td>
+              <td className="py-4 text-center">Advanced</td>
+              <td className="py-4 text-center">Advanced</td>
+            </tr>
+            <tr className="border-b">
+              <td className="py-4 font-medium">Optimization tools</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">Basic</td>
+              <td className="py-4 text-center">All</td>
+              <td className="py-4 text-center">All</td>
+            </tr>
+            <tr className="border-b">
+              <td className="py-4 font-medium">API access</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">100 calls/day</td>
+              <td className="py-4 text-center">500 calls/day</td>
+              <td className="py-4 text-center">Unlimited</td>
+            </tr>
+            <tr className="border-b">
+              <td className="py-4 font-medium">Team collaboration</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">3 seats</td>
+              <td className="py-4 text-center">10 seats</td>
+            </tr>
+            <tr className="border-b">
+              <td className="py-4 font-medium">Support</td>
+              <td className="py-4 text-center">Email</td>
+              <td className="py-4 text-center">Priority email</td>
+              <td className="py-4 text-center">Priority</td>
+              <td className="py-4 text-center">Dedicated</td>
+            </tr>
+            <tr className="border-b">
+              <td className="py-4 font-medium">White-label options</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">✓</td>
+            </tr>
+            <tr>
+              <td className="py-4 font-medium">Custom integrations</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">-</td>
+              <td className="py-4 text-center">✓</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-                    {/* Features Grid */}
-                    <div className="mb-20">
-                        <motion.h2
-                            className="text-3xl font-bold text-center mb-12"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            All Plans Include
-                        </motion.h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {features.map((feature, index) => (
-                                <motion.div
-                                    key={index}
-                                    className="group relative overflow-hidden rounded-xl border bg-background p-6 transition-all hover:shadow-lg"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                                >
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <div className="rounded-lg bg-primary/10 p-2">{feature.icon}</div>
-                                        <h3 className="text-xl font-semibold">{feature.title}</h3>
-                                    </div>
-                                    <p className="text-muted-foreground">{feature.description}</p>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* FAQ Section */}
-                    <div className="max-w-3xl mx-auto">
-                        <motion.h2
-                            className="text-3xl font-bold text-center mb-12"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            Frequently Asked Questions
-                        </motion.h2>
-                        <div className="space-y-6">
-                            {faqs.map((faq, index) => (
-                                <motion.div
-                                    key={index}
-                                    className="border rounded-lg p-6 transition-all"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                                >
-                                    <div
-                                        className="flex justify-between items-center cursor-pointer"
-                                        onClick={() => toggleFaq(index)}
-                                    >
-                                        <h3 className="text-xl font-semibold">{faq.question}</h3>
-                                        {openFaqIndex === index ? (
-                                            <ChevronUp className="h-5 w-5 text-primary" />
-                                        ) : (
-                                            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                                        )}
-                                    </div>
-                                    {openFaqIndex === index && (
-                                        <p className="text-muted-foreground mt-4">{faq.answer}</p>
-                                    )}
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-    )
+      <div className="mx-auto mt-16 max-w-[58rem] text-center">
+        <h2 className="font-heading text-3xl font-bold">Frequently Asked Questions</h2>
+        <ul className="mt-8 grid gap-6 text-left md:grid-cols-2">
+          <li className="space-y-2">
+            <h3 className="font-bold">Can I change my plan later?</h3>
+            <p className="text-muted-foreground">
+              Yes, you can upgrade or downgrade your plan at any time. Changes will be applied at the start of your next
+              billing cycle.
+            </p>
+          </li>
+          <li className="space-y-2">
+            <h3 className="font-bold">How do I cancel my subscription?</h3>
+            <p className="text-muted-foreground">
+              You can cancel your subscription from your account settings. You'll continue to have access until the end
+              of your current billing period.
+            </p>
+          </li>
+          <li className="space-y-2">
+            <h3 className="font-bold">Do you offer refunds?</h3>
+            <p className="text-muted-foreground">
+              We offer a 14-day money-back guarantee for all paid plans. If you're not satisfied, contact our support
+              team.
+            </p>
+          </li>
+          <li className="space-y-2">
+            <h3 className="font-bold">What payment methods do you accept?</h3>
+            <p className="text-muted-foreground">
+              We accept all major credit cards, PayPal, and bank transfers for annual plans.
+            </p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  )
 }
